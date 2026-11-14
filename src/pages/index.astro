@@ -4,7 +4,7 @@ import BaseLayout from '@moliver28/theme/layouts/BaseLayout.astro';
 import DiscoveryHead from '../components/DiscoveryHead.astro';
 import BlockList from '@moliver28/theme/blocks/BlockList.astro';
 import { loadComposedPages, resolveSourceEntry } from '@moliver28/theme/config/pages';
-import { BLOCK_KINDS } from '@moliver28/theme/blocks/registry';
+import { BLOCK_KINDS, BLOCK_VARIANTS } from '@moliver28/theme/blocks/registry';
 import PrintStyles from '@moliver28/theme/layouts/PrintStyles.astro';
 // Composed one-page home (sitefactory P14 B2): the pack declares
 // `features.home: composed` and site.config.yaml carries a `home:` page
@@ -17,7 +17,7 @@ import PrintStyles from '@moliver28/theme/layouts/PrintStyles.astro';
 // emitted index bytes are UNCHANGED (the #83 conditional-emission pattern).
 type SourceEntry = { id: string; data: Record<string, unknown> };
 type HomeBlock = { block: string; props: Record<string, unknown>; id?: string; source?: { collection: string; type?: string } };
-const { home } = loadComposedPages(process.cwd(), { blockKinds: BLOCK_KINDS, withHome: true });
+const { home } = loadComposedPages(process.cwd(), { blockKinds: BLOCK_KINDS, blockVariants: BLOCK_VARIANTS, withHome: true });
 if (!home) throw new Error('site.config.yaml: this pack emits the composed home, but site.config.yaml carries no `home:` page spec (see docs/TEMPLATE-CATALOG.md in the sitefactory repo)');
 const sourceCollections: Record<string, SourceEntry[]> = { "entities": (await getCollection("entities")) as unknown as SourceEntry[], "pages": (await getCollection("pages")) as unknown as SourceEntry[],  };
 const blocks = home.blocks.map((entry: HomeBlock) => {
@@ -54,7 +54,7 @@ const practiceGraph: Record<string, unknown> = {
       sameAs: [txt(prof?.psychology_today_url)].filter(Boolean),
     },
     { '@type': 'Person', '@id': nodeId('person'), name: txt(prof?.name), jobTitle: txt(prof?.role), worksFor: { '@id': nodeId('psychologist') } },
-    { '@type': 'WebSite', '@id': nodeId('website'), name: 'Kara Hokes, PhD', url: siteUrl, publisher: { '@id': nodeId('person') } },
+    { '@type': 'WebSite', '@id': nodeId('website'), name: "Kara Hokes, PhD", url: siteUrl, publisher: { '@id': nodeId('person') } },
     ...(byType('faq').length
       ? [{ '@type': 'FAQPage', '@id': nodeId('faq'), mainEntity: byType('faq').map((f) => ({ '@type': 'Question', name: txt(f.data.question), acceptedAnswer: { '@type': 'Answer', text: txt(f.data.answer) } })) }]
       : []),

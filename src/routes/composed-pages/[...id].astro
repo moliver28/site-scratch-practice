@@ -4,7 +4,7 @@ import BaseLayout from '@moliver28/theme/layouts/BaseLayout.astro';
 import DiscoveryHead from '../../components/DiscoveryHead.astro';
 import BlockList from '@moliver28/theme/blocks/BlockList.astro';
 import { loadComposedPages } from '@moliver28/theme/config/pages';
-import { BLOCK_KINDS } from '@moliver28/theme/blocks/registry';
+import { BLOCK_KINDS, BLOCK_VARIANTS } from '@moliver28/theme/blocks/registry';
 
 /**
  * Config-composed pages (P6.7), injected at /pages/[...id] ONLY when
@@ -16,7 +16,7 @@ import { BLOCK_KINDS } from '@moliver28/theme/blocks/registry';
  */
 export async function getStaticPaths() {
   const markdownIds = new Set((await getCollection('pages')).map((entry) => entry.id));
-  return Object.entries(loadComposedPages(process.cwd(), { blockKinds: BLOCK_KINDS }))
+  return Object.entries(loadComposedPages(process.cwd(), { blockKinds: BLOCK_KINDS, blockVariants: BLOCK_VARIANTS }))
     .filter(([slug]) => !markdownIds.has(slug))
     .map(([slug, composedPage]) => ({
       params: { id: slug },
@@ -33,16 +33,11 @@ interface Props {
   };
 }
 const { composedPage } = Astro.props;
-// Client fix (re-assert after copier recopy): the emitted route ships
-// without the head-extra slot, so composed pages got no OG/canonical tags
-// and no site token overrides — every other wired route mounts
-// DiscoveryHead here (index.astro, pages, entities precedents).
-const { id } = Astro.params;
 ---
 
 <BaseLayout title={composedPage.title} description={composedPage.description} siteName="Kara Hokes, PhD">
   <Fragment slot="head-extra">
-    <DiscoveryHead type="website" title={composedPage.title} description={composedPage.description} path={`pages/${id}/`} />
+    <DiscoveryHead type="article" title={composedPage.title} description={composedPage.description} path={`pages/${Astro.params.id}/`} />
   </Fragment>
   <article class="sf-page">
     <h1>{composedPage.title}</h1>
