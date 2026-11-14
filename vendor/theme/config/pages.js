@@ -104,7 +104,7 @@ export function composedPagesSchema(blockKinds) {
       block: z.enum(kinds),
       props: z.record(z.string(), z.unknown()).default({}),
       variant: z.string().optional(),
-      id: z.string().regex(/^[a-z][a-z0-9-]*$/, 'anchor ids must be lowercase letters/digits with single - separators, starting with a letter').optional(),
+      id: z.string().regex(/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/, 'anchor ids must be lowercase letters/digits with single - separators, starting with a letter').optional(),
       source: z.object({ collection: z.string().min(1, 'name the collection to fetch (e.g. "entities")'), type: z.string().min(1).optional() }).strict().optional(),
     })
     .strict();
@@ -174,8 +174,8 @@ function pagesValidationError(error, rawConfig, blockKinds) {
  * Per-entry variant validation + fold (P14 B1a; B2 extends it to the home
  * spec): an entry-level `variant:` must be declared for its kind in
  * `blockVariants` (omitted callers stay green while no entry declares one —
- * the byte-proof-frozen callers). Unknown variants fail naming the kind and
- * valid ids; a valid variant FOLDS into entry props.
+ * e.g. a site importing pages.js without the registry). Unknown variants
+ * fail naming the kind and valid ids; a valid variant FOLDS into entry props.
  */
 function foldVariants(specs, blockVariants) {
   for (const spec of specs) {
