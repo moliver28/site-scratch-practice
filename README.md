@@ -78,9 +78,21 @@ Site-level parity (the bench's non-section surface):
   @graph reads the same entries the sections render.
 - **`src/content.extensions.ts`** is the client-owned schema seam
   (survives recopy). Everything else under `src/` is template-emitted;
-  this repo's one deliberate emitted-file edit is the og:image block in
-  `DiscoveryHead.astro` (the path the template's own comment documents) —
-  re-assert it after a `copier recopy`.
+  this repo's deliberate emitted-file edits (re-assert after a
+  `copier recopy`) are:
+  1. the og:image block in `DiscoveryHead.astro` (the path the template's
+     own comment documents), and
+  2. the a11y token override in the same file — clinical-calm's
+     `--sf-color-accent` (#0d9488) is 3.6:1 as small-text ink on the
+     preset background, below the 4.5:1 AA floor the emitted axe gates
+     enforce; the override swaps it to the preset's own link teal
+     #0f766e (5.2:1) site-wide. Upstreamable: fix the preset token —
+     the factory's practice-smoke never caught this because it renders
+     with the default preset (`--data pack=practice` only).
+  3. the `head-extra` mount in `src/routes/composed-pages/[...id].astro` —
+     the emitted route ships without DiscoveryHead, so composed pages had
+     no OG/canonical tags and none of the site token overrides; this
+     brings them in line with every other wired route.
 - `AGENTS.md` is template-emitted and still carries the journalism pack's
   framing; the practice rules here govern. (Upstreamable: pack-aware
   AGENTS.md emission.)
