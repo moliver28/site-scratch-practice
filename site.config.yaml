@@ -22,20 +22,112 @@ theme:
 graph:
   height: 32rem
 
-# Config-composed pages (P6.7, OPTIONAL): declare a page as an ordered list
-# of theme blocks — no markdown file, no template edit. Commented out by
-# default (an absent field changes nothing); uncomment and adapt to add:
-# pages:
-#   about:
-#     title: About this investigation
-#     description: Who we are and how to reach the newsroom
-#     blocks:
-#       - block: fields        # a block-registry id; unknown ids fail the build
-#         props:               # rendered as a definition list
-#           mission: Independent tracking of the Riverside clearance.
-#           contact: tips@example.org
+# Composed one-page home + deep page (P6.7/P14 B2). The practice pack
+# declares `features.home: composed`, so src/pages/index.astro reads the
+# `home:` spec below — the same page spec as a `pages:` entry, with block
+# entries carrying an anchor `id` (the nav's `/#<id>` links resolve
+# against them) and a `source:` ({collection, type?}) that fetches the
+# block's items from the entity YAML, so each section is BUILT from one
+# YAML source (content lives in exactly one place — the benchmark's own
+# anti-drift rule). Shape validated by the factory's practice-smoke CI
+# leg; the spec's twin lives in sitefactory ops/test/fixtures/practice-home.yaml.
 # Runbook (shape, slug rules, config-vs-markdown precedence):
 # docs/TEMPLATE-CATALOG.md in the sitefactory repo.
+
+home:
+  title: Online Therapy in Washington State
+  description: >-
+    Online trauma therapy with Kara Hokes, PhD, a clinical psychologist
+    licensed in Washington State and PSYPACT certified. CPT, DBT, ACT, PE,
+    and CBT by secure video for veterans, survivors of sexual and domestic
+    violence, and under-represented communities. Free 15-minute
+    consultation; most major insurance accepted; $150 self-pay.
+  blocks:
+    - block: hero
+      props:
+        kicker: "Online-only practice · WA #61681733"
+        headline: >-
+          When each day feels like a roller coaster, therapy can help you
+          get off the ride.
+        lede: >-
+          I’m Dr. Kara Hokes, a licensed psychologist specializing in
+          evidence-based care for trauma and emotion dysregulation.
+          Together, we’ll use approaches like DBT, CPT, PE, and ACT to meet
+          your needs: at a pace that honors your nervous system and story.
+          Evidence-based does not have to mean cold. I bring curiosity,
+          warmth, and focused attention to every session.
+    - id: about
+      block: fields
+      source: { collection: entities, type: profile }
+    - id: communities
+      block: cards
+      source: { collection: entities, type: community }
+    - id: services
+      block: cards
+      source: { collection: entities, type: service }
+    - id: concerns
+      block: fields
+      source: { collection: entities, type: concerns }
+    - id: approach
+      block: timeline
+      source: { collection: entities, type: process_step }
+    - id: reading
+      block: cards
+      source: { collection: entities, type: book }
+    - id: resources
+      block: cards
+      source: { collection: entities, type: resource }
+    - id: insurance
+      block: cards
+      source: { collection: entities, type: insurance_plan }
+    - id: faq
+      block: faq
+      source: { collection: entities, type: faq }
+    - id: contact
+      block: fields
+      source: { collection: entities, type: profile }
+
+pages:
+  referrals:
+    title: For referring providers
+    description: Who this practice is the right referral for, and what happens after you send someone.
+    blocks:
+      - block: hero
+        props:
+          kicker: For referring providers
+          headline: Referring a patient to me.
+          lede: >-
+            You know the referral only works if the patient actually lands.
+            Here’s the whole picture so you can decide quickly whether I’m
+            the right place, and what happens after you send someone.
+      - block: fields
+        props:
+          who_lands_well_with_me: >-
+            Teens, adults, and elders 65+ by secure video. The core of my
+            practice is trauma and PTSD, emotion dysregulation, sexual abuse
+            recovery, and domestic violence, with CPT, DBT, ACT, PE, and CBT
+            as the main tools. Veterans and first responders, survivors of
+            violence, and people who have caused harm and want to stop are
+            groups I work with often.
+          who_i_refer_elsewhere: >-
+            Young children: I’ll point you to colleagues who specialize in
+            child and adolescent work. Anyone in immediate danger: 988 or
+            911 first, therapy after things are stable. Medication-first
+            needs: psychologists don’t prescribe in Washington, so I
+            coordinate with a prescriber rather than replace one.
+          the_practical_part: >-
+            Online-only across Washington State, plus PSYPACT states for
+            private-pay clients. 16 insurance plans including Aetna,
+            Premera, Medicare, and Regence; the full list is in the
+            Insurance section of the home page. $150 per session with
+            sliding-scale options. First openings usually land within a
+            week.
+          making_the_handoff_warm: >-
+            The fastest path is the patient calling (360) 358-5174 or
+            emailing the practice; a warm handoff from you still beats a
+            cold directory listing. If you’d rather brief me first, email me
+            and put “referral” in the subject line. Include a release of
+            information with your paperwork and I’ll take it from there.
 
 # Reader discovery (P9 UX F3): defaults are ALL ON — XML sitemap
 # (sitemap-index.xml), RSS feed (/rss.xml), Open Graph + Twitter cards,
