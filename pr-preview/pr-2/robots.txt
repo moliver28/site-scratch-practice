@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://moliver28.github.io/site-scratch-practice/sitemap-index.xml
