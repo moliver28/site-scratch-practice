@@ -1,143 +1,100 @@
-# Kara Hokes, PhD
+# Scratch Practice Site — karahokes.com rebuilt on sitefactory
 
-Investigative reporting site built with [sitefactory](https://github.com/moliver28/sitefactory)
-(journalism template v0.1.0, @moliver28/theme 0.9.0).
+A therapy-practice site built with [sitefactory](https://github.com/moliver28/sitefactory)
+(practice schema-pack, journalism template v0.1.0, @moliver28/theme 0.9.0,
+`clinical-calm` preset). It rebuilds the content model of
+[moliver28/karahokes-website](https://github.com/moliver28/karahokes-website)
+(www.karahokes.com) as pack DATA — facts transcribed from the bench repo
+(read-only reference; no bench markup, TSX, CSS, or binaries copied).
 
-- Live: https://moliver28.github.io/site-scratch-practice/
+- Live: https://moliver28.github.io/site-scratch-practice/ (Pages is enabled
+  after the initial PR merges; deploy consumes the CI build artifact)
 - PR previews: `https://moliver28.github.io/site-scratch-practice/pr-preview/pr-<n>/`
+- Efficiency accounting: [docs/efficiency.md](docs/efficiency.md)
 
 ## Structure
 
 | Path | What it is |
 | --- | --- |
-| `src/content/entities/` | Entity YAML (people, organisations, events, places) |
-| `src/content/edges/` | Typed, evidence-cited relations between entities |
-| `src/content/pages/` | Narrative pages (markdown) |
-| `src/content/custom-entities/` | Fast path for brand-new entity kinds |
-| `src/content.extensions.ts` | YOUR schema extensions — the one schema file you edit (survives every recopy) |
-| `src/components/DiscoveryHead.astro` | Reader-discovery head tags (OG/Twitter cards, JSON-LD) |
-| `src/rss/rss.xml.ts` | RSS feed endpoint (dated pages, newest first; routed only when `discovery.rss` is on) |
-| `static/evidence/` | Source documents, referenced by content |
-| `static/admin/` | Sveltia CMS (staff-only, `/admin/`) |
+| `src/content/entities/*.yaml` | 64 typed practice entries (profile, services, communities, FAQs, insurance plans, concerns, process steps, books, resources) |
+| `src/content/pages/*.md` | Markdown pages (crisis resources) |
+| `site.config.yaml` | Site identity + the composed `home:` spec (10 anchored sections) + `pages:` (referrals) |
+| `src/components/DiscoveryHead.astro` | OG/Twitter/JSON-LD head tags + this site's og:image extension |
+| `static/social-card.png` | 1200x630 OG card (clinical-calm palette) |
+| `static/dr-kara-hokes.vcf` | Downloadable vCard, CI-synced to the profile entity |
+| `static/robots.txt` | Allow-all + sitemap pointer |
+| `static/admin/` | Sveltia CMS (staff-only, `/admin/`, practice vocabulary) |
 | `vendor/theme/` | Vendored `@moliver28/theme` (pinned via `site.config.yaml`) |
-| `site.config.yaml` | Machine-readable site identity for factory tooling |
-| `.github/workflows/monitor.yml` | Weekly link check of the deployed site (opens an issue on failure) |
-| `AGENTS.md` | Editorial + agent rules (read before writing content) |
+| `.github/workflows/ci.yml` | gates (build artifact) → quality (axe + Lighthouse + lychee) → deploy/preview/cleanup |
+| `.github/workflows/monitor.yml` | Weekly link check of the deployed site |
+| `.github/workflows/vcf-sync.yml` | vCard ↔ profile phone/email sync pin |
+| `docs/efficiency.md` | Rebuild LOC per class + ratio math (target: beat 3.4x) |
+| `AGENTS.md` | Template-emitted rules (recopy-managed; see practice notes below) |
 
-## Schema pack
+## Parity — all 12 benchmark sections mapped
 
-This site's content model is emitted from the practice schema-pack (the
-`pack` answer recorded in `.copier-answers.yml`). Site owners never touch
-packs. Template-side authors: a new vertical is a new pack in the template's
-`packs/` directory — **never a template fork** (see the template's
-`packs/README.md` for the pack contract, the graph axis (#83), and the
-author checklist portfolio followed as vertical #2). Boundary to know: the
-factory's render CI proves EMISSION shape for every pack and BUILD + gates
-for the shipped ones (journalism via render-smoke, portfolio via the
-`portfolio-smoke` leg); a reshaped or new pack whose emitted collections
-don't satisfy the pages' `getCollection` calls still surfaces at
-`astro check`/build in the site repo, so run the site's own gates before
-shipping a reshaped pack.
+The benchmark home is one page with 12 anchored sections. Every row is
+either SHIPPED on this site or OUT **with the surface that replaces it** —
+nothing is lost by omission. Bench files cited as facts-only sources.
 
-## Client-owned schema extensions (sitefactory ADR #85)
+| # | Bench section | Surface on this site | Status |
+| --- | --- | --- | --- |
+| 1 | `#home` hero (`hero.tsx`) | `hero` block (kicker/headline/lede props, composed home) | SHIPPED — the two in-page CTA buttons degrade to the section nav + contact card: the theme's hero `cta:` list accepts http(s) URLs only (B14 gate), anchors are carried by the nav |
+| 2 | `#about` (`about.tsx`) | `fields` block ← `profile` (summary prose, credentials, license # + verify link, PSYPACT) | SHIPPED — pull-quote degrades to prose (the `quote` block exists but is not bound); portrait omitted (practice-owned photo, not copied — a live practice drops its file at the same path) |
+| 3 | `#communities` (`communities.tsx`) | `cards` block ← `community` × 10 | SHIPPED |
+| 4 | `#specialties` (`specialties.tsx`) | `cards` block ← `service` × 9, badge chips ride the `badge` field type | SHIPPED |
+| 5 | `#concerns` (`concerns.tsx`) | `fields` block ← `concerns` (16-item list) | SHIPPED |
+| 6 | `#grounding` + 5-4-3-2-1 senses (`grounding.tsx`, `senses-grounding.tsx`) | — | OUT by design — interactive therapeutic tools need JS-island infrastructure the theme deliberately does not ship; crisis paths are carried by the crisis-resources page, the crisis notice fields, and the print sheet |
+| 7 | `#approach` (`approach.tsx`) | `timeline` block ← `process_step` × 4 | SHIPPED |
+| 8 | `#reading` (`reading.tsx`) | `cards` blocks ← `book` × 4 + `resource` × 5 (bookshop.org/external links ride `url` fields) | SHIPPED — book covers omitted (practice/publisher-owned binaries, not copied) |
+| 9 | `#insurance` (`insurance.tsx`) | `cards` block ← `insurance_plan` × 16; fee/self-pay/Good-Faith-Estimate facts live in the profile + FAQ answers | SHIPPED |
+| 10 | `#faq` (`faq.tsx`) | `faq` block ← `faq` × 14 — native `<details>`, zero JS; the SAME entries emit the FAQPage JSON-LD node (single-source invariant is structural) | SHIPPED |
+| 11 | `#contact` (`contact.tsx`) | `fields` block ← `profile` (phone → `tel:`, email → `mailto:`, hours, fee, location, website, Psychology Today) + crisis notice + print stylesheet + vCard file (CI-synced) | SHIPPED — consultation form + Worker backend OUT by design (HIPAA-adjacent intake stays out; the tel/mailto contact card is the shipped truth) |
+| 12 | `#providers` (referrers, `providers.tsx`) | composed page `/pages/referrals/` (hero + fields, 4 referrer subsections) | SHIPPED |
 
-`src/content.config.ts` is TEMPLATE-owned: `copier recopy -l -w` overwrites
-it on every template update, so never edit it — that is how site-local schema
-guards get silently reverted (#50). Site-local schema customizations live in
-**`src/content.extensions.ts`** — the one schema file you own. It is created
-with the site, imported and applied by the core config, and copier is
-structurally unable to rewrite it once it exists (`_skip_if_exists`), so your
-customizations survive every recopy and update.
+Site-level parity (the bench's non-section surface):
 
-The file ships as an empty record; an unused seam changes nothing. Entries
-are keyed by collection name:
+| Bench feature | Surface on this site | Status |
+| --- | --- | --- |
+| JSON-LD `@graph` (Psychologist/Person/WebSite/FAQPage) | One `ld+json` script on the home, generated from the same entities the sections render | SHIPPED |
+| Sitemap, robots.txt, canonical, OG/Twitter cards | `@astrojs/sitemap`, `DiscoveryHead`, `static/robots.txt`, `static/social-card.png` + og:image tags | SHIPPED |
+| Downloadable vCard + CI sync (`site.ts ↔ vcf ↔ worker`) | `static/dr-kara-hokes.vcf` + `vcf-sync.yml` (one YAML source + one grep — no worker to sync) | SHIPPED (narrowed to what exists) |
+| Print crisis sheet + print button | `PrintStyles` hook on the composed home (crisis + contact one-pager) | SHIPPED |
+| Sticky scrollspy header + mobile Sheet nav | Static anchor nav + skip link (the pack's 9-anchor sections index) | OUT — zero-client-JS policy; anchors keep deep links working |
+| Back-to-top, next-section button, framer-motion reveals | Native anchors; no scroll JS | OUT — zero-client-JS policy |
+| Structured 3-column footer | `BaseLayout` footer slot (site identity + author line) | OUT — structured footer is catalog row D32, not scheduled this wave |
+| Consultation form + Cloudflare Worker backend | Contact card (`tel:` / `mailto:`) | OUT by design — see #11 |
+| Breathing widget + senses stepper | Crisis-resources page + print sheet | OUT by design — see #6 |
+| Cloudflare analytics beacon | `analytics: none` | OUT — privacy-first policy |
+| Geist / Source Serif 4 webfonts | `clinical-calm` token system stacks | OUT — no-webfonts policy |
+| Dark mode (`prefers-color-scheme` sheet) | Light-only `clinical-calm` identity | OUT — catalog E36, flagged not scheduled |
 
-```ts
-import { defineCollection } from 'astro:content';
-import { z } from 'astro/zod';
-import { glob } from 'astro/loaders';
+## Practice notes (binding for agents editing this repo)
 
-export const extensions: Record<string, ReturnType<typeof defineCollection>> = {
-  // REPLACE a pack collection: re-assert it (copy the core definition from
-  // src/content.config.ts, then modify — e.g. a stricter pages schema).
-  // ADD a collection: use a new key.
-  documents: defineCollection({
-    loader: glob({ pattern: '**/*.yaml', base: './src/content/documents' }),
-    schema: z.object({ name: z.string() }).catchall(z.unknown()),
-  }),
-};
-```
-
-Boundaries: the Sveltia admin config (`static/admin/`) is pack-emitted — a
-client-added collection gets no admin UI until upstreamed; and vertical-wide
-models belong in the schema-pack (a template PR), not the seam. If a seam
-tweak proves universal, upstream it into the pack so every site inherits it.
+- **Facts live in exactly one place.** Entity YAML under `src/content/` is
+  the single source; the home's sections only BIND it via `source:`. Never
+  restate a fact in `site.config.yaml`, the vCard, or a page — the
+  `vcf-sync.yml` pin fails the build on phone/email drift, and the JSON-LD
+  @graph reads the same entries the sections render.
+- **`src/content.extensions.ts`** is the client-owned schema seam
+  (survives recopy). Everything else under `src/` is template-emitted;
+  this repo's one deliberate emitted-file edit is the og:image block in
+  `DiscoveryHead.astro` (the path the template's own comment documents) —
+  re-assert it after a `copier recopy`.
+- `AGENTS.md` is template-emitted and still carries the journalism pack's
+  framing; the practice rules here govern. (Upstreamable: pack-aware
+  AGENTS.md emission.)
 
 ## Commands
 
 ```sh
 npm install
 npm run dev        # local dev server
-npm run build      # validates content (Zod) and builds
+npm run build      # production build (Zod validation fails on bad data)
 npm run typecheck  # astro check
 ```
 
-Requires npm >= 8.3: transitive dependency versions are pinned via npm `overrides` (sitefactory #125), which older npm silently ignores.
-
-External-link check: the optional `linkcheck:` block in `site.config.yaml` (`exclude_domains`, `accept`) is the client-editable, declarative, auditable flakiness policy for bot-blocked external domains; internal links are always strict.
-
-## Reader discovery
-
-On by default: XML sitemap (`sitemap-index.xml`), RSS feed (`/rss.xml` —
-pages with a `date:` frontmatter field, newest first), Open Graph + Twitter
-cards, and JSON-LD (`Article` on article pages, `WebSite` on the home
-page). No `og:image` is emitted — the template ships no social image; to
-get image preview cards, add `static/social-card.png` plus an `og:image`
-tag in `src/components/DiscoveryHead.astro`. Opt any part out in
-`site.config.yaml` (unknown keys fail the build loudly):
-
-```yaml
-discovery:
-  sitemap: false # also degrades the weekly monitor to homepage-only checks
-  rss: false
-  opengraph: false
-  jsonld: false
-```
-
-The RSS feed's `<language>` comes from the optional top-level `language:`
-key in `site.config.yaml` (BCP-47 tag, e.g. `de-DE`); it defaults to
-`en-us`.
-
-## Post-publish link monitor
-
-`.github/workflows/monitor.yml` runs lychee against the deployed site every
-Monday 13:00 UTC (input: the deployed `sitemap-0.xml`, so every page gets
-checked; SSRF-safe; the `linkcheck:` policy block above applies here too).
-On failure it opens one GitHub issue per run date, titled
-`[monitor] broken links <date>`, body capped at the first 100 report lines
-with the full report as a run artifact; a same-date re-run updates the open
-issue instead of duplicating it. Note: GitHub disables scheduled workflows
-after 60 days without repo activity (you get an email when that happens) —
-any push resets the clock.
-
-## Updating the theme
-
-The theme is vendored (`file:./vendor/theme`) and pinned in `site.config.yaml`.
-Theme updates ship as a new `@moliver28/theme` version; update `vendor/theme`
-to that version and let CI rebuild. `copier recopy` never adopts changed
-`copier.yml` defaults, so the version bump takes TWO passes:
-
-```sh
-copier recopy -l -w
-copier recopy -l -w -d theme_version=<new>
-```
-
-The recopy rewrites everything the template owns EXCEPT your
-`src/content.extensions.ts` (see "Client-owned schema extensions" above):
-template-owned files update; your schema extensions stay put.
-
-The lockfile is a mechanical companion: when an update changes dependency
-lines in `package.json`, the matching `package-lock.json` diff is expected
-update output, not drift — keep it in the same commit or `npm ci` fails in
-CI. See sitefactory's `AGENTS.md` ("Package conventions") for the full
-update procedure.
+Deploys: push to `main` → GitHub Pages at
+`https://moliver28.github.io/site-scratch-practice/`; PRs get previews at
+`/pr-preview/pr-<n>/` (auto-cleaned on merge). Deploy ships exactly what
+the gates job built (artifact handoff — no second build, no drift).
