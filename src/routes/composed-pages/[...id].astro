@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '@moliver28/theme/layouts/BaseLayout.astro';
+import DiscoveryHead from '../../components/DiscoveryHead.astro';
 import BlockList from '@moliver28/theme/blocks/BlockList.astro';
 import { loadComposedPages } from '@moliver28/theme/config/pages';
 import { BLOCK_KINDS } from '@moliver28/theme/blocks/registry';
@@ -32,9 +33,17 @@ interface Props {
   };
 }
 const { composedPage } = Astro.props;
+// Client fix (re-assert after copier recopy): the emitted route ships
+// without the head-extra slot, so composed pages got no OG/canonical tags
+// and no site token overrides — every other wired route mounts
+// DiscoveryHead here (index.astro, pages, entities precedents).
+const { id } = Astro.params;
 ---
 
 <BaseLayout title={composedPage.title} description={composedPage.description} siteName="Kara Hokes, PhD">
+  <Fragment slot="head-extra">
+    <DiscoveryHead type="website" title={composedPage.title} description={composedPage.description} path={`pages/${id}/`} />
+  </Fragment>
   <article class="sf-page">
     <h1>{composedPage.title}</h1>
     <BlockList entries={composedPage.blocks} />

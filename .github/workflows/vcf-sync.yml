@@ -1,0 +1,59 @@
+name: vCard sync
+
+# The karahokes.com benchmark enforced a CI triple-sync (site.ts ↔ vCard ↔
+# form worker) because its facts lived in TypeScript. This rebuild's single
+# source is src/content/entities/profile.yaml — the downloadable vCard
+# (static/dr-kara-hokes.vcf, served at the profile entity's `vcard_path`)
+# is the one derived artifact worth re-checking, so this workflow is the
+# same invariant narrowed to one YAML source + one grep: the vCard's TEL
+# and EMAIL must equal the profile entity's `phone` and `email` (phone
+# compared digits-only: "+1-360-358-5174" and "+13603585174" agree).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vcf-sync-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  vcf-sync:
+    name: vCard phone/email == profile entity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Compare phone + email (digits-only phone, case-insensitive email)
+        run: |
+          profile_phone=$(sed -n 's/^phone: *//p' src/content/entities/profile.yaml | tr -d '"'"'"'')
+          profile_email=$(sed -n 's/^email: *//p' src/content/entities/profile.yaml | tr -d '"'"'"'')
+          vcf_phone=$(sed -n 's/^TEL[^:]*://p' static/dr-kara-hokes.vcf | head -n 1)
+          vcf_email=$(sed -n 's/^EMAIL[^:]*://p' static/dr-kara-hokes.vcf | head -n 1)
+
+          if [ -z "$profile_phone" ] || [ -z "$profile_email" ]; then
+            echo "::error::profile.yaml is missing a phone or email line — the sync pin has nothing to compare"
+            exit 1
+          fi
+          if [ -z "$vcf_phone" ] || [ -z "$vcf_email" ]; then
+            echo "::error::dr-kara-hokes.vcf is missing a TEL or EMAIL line — the sync pin has nothing to compare"
+            exit 1
+          fi
+
+          norm_phone() { printf '%s' "$1" | tr -cd '0-9'; }
+          norm_email() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
+
+          if [ "$(norm_phone "$profile_phone")" != "$(norm_phone "$vcf_phone")" ]; then
+            echo "::error::phone drift: profile.yaml '$profile_phone' vs dr-kara-hokes.vcf '$vcf_phone'"
+            exit 1
+          fi
+          if [ "$(norm_email "$profile_email")" != "$(norm_email "$vcf_email")" ]; then
+            echo "::error::email drift: profile.yaml '$profile_email' vs dr-kara-hokes.vcf '$vcf_email'"
+            exit 1
+          fi
+
+          echo "vCard in sync: phone $(norm_phone "$profile_phone"), email $(norm_email "$profile_email")"
