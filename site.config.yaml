@@ -160,4 +160,14 @@ deploy:
   target: github-pages
   base: /site-scratch-practice/
 
+# Link-check flakiness policy (sitefactory #53) — client-editable and
+# auditable; internal links stay strict always. bookshop.org (search
+# URLs) and rainn.org bot-block automated probes with 403 Forbidden;
+# both are real, browser-reachable destinations, so they are excluded
+# from the external check rather than loosening the accepted-status set.
+linkcheck:
+  exclude_domains:
+    - bookshop.org
+    - rainn.org
+
 analytics: none
