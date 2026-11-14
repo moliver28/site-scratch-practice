@@ -16,10 +16,10 @@ is a byte-copy and adds zero).
 | --- | --- | --- | --- | --- |
 | Pack data (sitefactory `packs/practice/`) | 2 | 38 | 132 | `pack.jinja` (24) + `admin/practice.yml` (14) — the whole vertical's schema/admin declaration |
 | Content YAML (`src/content/`) | 65 | 469 | 472 | 64 entity entries + 1 markdown page — every fact exactly once |
-| `site.config.yaml` | 1 | 125 | 163 | identity, preset, discovery, budgets, deploy + composed `home:` (10 anchored sections) + `pages:` referrals |
+| `site.config.yaml` | 1 | 129 | 173 | identity, preset, discovery, budgets, deploy, linkcheck policy + composed `home:` (10 anchored sections) + `pages:` referrals |
 | Scratch glue | 5 | 69 | 102 | `robots.txt` (3 code) + `dr-kara-hokes.vcf` (12, raw — no cloc lexer) + `vcf-sync.yml` (41 code) + emitted-file deltas counted code-only (13): DiscoveryHead og:image + a11y token override (+23/−5 raw) and the composed-pages route head-extra mount (+9/−0 raw) |
 | Theme (counted once, factory wave total) | — | 600 | 600 | A1 faq/cards 164 + A2 email/badge/meter 74 + B1a variant layer 104 + B1b 8 variants 52 + B2 composed home 129 + B3 jsonld/print 77 |
-| **Total** | **73** | **1,301** | **1,469** | |
+| **Total** | **73** | **1,305** | **1,479** | |
 
 Excluded from both sides (symmetric): docs/README/AGENTS prose (the bench's
 ~203 docs lines are outside its 6,323 too), lockfiles, generated build
@@ -37,21 +37,21 @@ base    = 6,323 − 1,850 comparable (form 497 + worker 279 + JS tools 502 +
           analytics 61 + header JS share ~130 — OUT by design, replaced by
           static surfaces; see the README parity table)
         = 4,473 LOC
-rebuild = 1,301 LOC (cloc code, theme at actual 600)
+rebuild = 1,305 LOC (cloc code, theme at actual 600)
 
-ratio   = 4,473 / 1,301 = 3.44x   ← target: beat 3.4x — MET
+ratio   = 4,473 / 1,305 = 3.43x   ← target: beat 3.4x — MET
 ```
 
 ### Sensitivities (stated, not hidden)
 
-- Theme at its 650 CAP instead of actual 600: rebuild 1,351 → **3.31x**.
-- Raw-line counting on the rebuild side (1,469 raw incl. blanks/comments;
-  base stays at its raw 4,473): **3.04x**. The pinned method pairs the
+- Theme at its 650 CAP instead of actual 600: rebuild 1,355 → **3.30x**.
+- Raw-line counting on the rebuild side (1,479 raw incl. blanks/comments;
+  base stays at its raw 4,473): **3.02x**. The pinned method pairs the
   base's raw count with the cloc-code rebuild — the same accounting the
   gap analysis used for its ~1,325 LOC projection ("≈3.4x"); the measured
-  rebuild lands just under that projection (the a11y token override and
-  the composed-page head mount cost 13 code lines — see the parity table
-  and the README practice notes).
+  rebuild lands just under that projection (the a11y token override, the
+  composed-page head mount, and the linkcheck policy cost 17 code lines —
+  see the parity table and the README practice notes).
 
 Reconciliation of the base (re-measured for this doc, raw `wc`):
 `bench-karahokes/src` = 6,044 lines (incl. 266 CSS, incl. the 1,210-LOC
