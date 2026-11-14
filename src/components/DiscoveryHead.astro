@@ -66,17 +66,11 @@ const articleJsonld =
     : undefined;
 
 // WebSite on the home page ONLY (task contract); other website-type pages
-// (graph, entity lists) get cards but no JSON-LD.
-const homeJsonld =
-  type === 'website' && path === ''
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: siteName,
-        url: canonical.href,
-      }
-    : undefined;
-
+// (graph, entity lists) get cards but no JSON-LD. Practice pack: the home
+// @graph (WebSite included) is composed once in src/pages/index.astro, so
+// the plain WebSite node stays suppressed here — the homeJsonld const is
+// not emitted (sitefactory bc47d7f, B3.1), and article pages keep
+// articleJsonld only.
 const jsonld = discovery.jsonld ? (articleJsonld ) : undefined;
 ---
 
