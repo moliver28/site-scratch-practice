@@ -8,10 +8,11 @@
  * src/lib/discovery.ts — defaults are ALL ON; set a key to false there to
  * drop these tags from every page.
  *
- * og:image is intentionally omitted: the template ships no social image
- * asset and none is invented for it. A site that wants social cards with
- * a preview image adds `static/social-card.(png|jpg)` plus an og:image
- * tag here; until then Twitter falls back to a plain `summary` card.
+ * og:image: the template ships no social image asset and invents none.
+ * This site took the documented client extension: `static/social-card.png`
+ * (generated once, committed) plus the og:image tags below, so shares get
+ * a real preview card (twitter `summary_large_image`) instead of the
+ * plain `summary` fallback the template emits.
  *
  * `path` is the base-relative route ('' on home, `pages/<id>/` on
  * articles) — the same id-derived shape pages use for internal links, so
@@ -40,6 +41,9 @@ const discovery = resolveDiscovery();
 const fullTitle = title === siteName ? title : `${title} · ${siteName}`;
 const canonical = new URL(`${import.meta.env.BASE_URL}${path}`, import.meta.env.SITE);
 const ogDescription = description ?? siteDescription;
+// Social card: base-aware absolute URL, same construction as `canonical`
+// (BASE_URL keeps /site-scratch-practice/ correct on GitHub Pages).
+const socialCard = new URL(`${import.meta.env.BASE_URL}social-card.png`, import.meta.env.SITE).href;
 
 const published =
   date !== undefined && date !== null && !Number.isNaN(new Date(date as string | Date).getTime())
@@ -84,7 +88,12 @@ const jsonld = discovery.jsonld ? (articleJsonld ) : undefined;
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={ogDescription} />
       <meta property="og:url" content={canonical.href} />
-      <meta name="twitter:card" content="summary" />
+      <meta property="og:image" content={socialCard} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content="Kara Hokes, PhD — online trauma therapy in Washington State" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:image" content={socialCard} />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={ogDescription} />
     </>
