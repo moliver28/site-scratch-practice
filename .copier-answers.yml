@@ -1,0 +1,16 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_src_path: F:/Documents/ZCode/.zcode/.zcode/workspace/9c87e746-e53a-4ad7-8757-26cd3b7e1b0b/repos/sitefactory/templates/journalism
+analytics: none
+author: Kara Hokes, PhD
+description: Online trauma therapy with Kara Hokes, PhD, a clinical psychologist licensed
+    in Washington State and PSYPACT certified. CPT, DBT, ACT, PE, and CBT by secure
+    video for veterans, survivors of sexual and domestic violence, and under-represented
+    communities. Free 15-minute consultation; most major insurance accepted; $150
+    self-pay.
+graph_height: 32rem
+owner: moliver28
+pack: practice
+repo: site-scratch-practice
+site_name: Kara Hokes, PhD
+theme_preset: clinical-calm
+theme_version: 0.9.0

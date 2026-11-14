@@ -1,0 +1,82 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@moliver28/theme/layouts/BaseLayout.astro';
+import DiscoveryHead from '../components/DiscoveryHead.astro';
+import BlockList from '@moliver28/theme/blocks/BlockList.astro';
+import { loadComposedPages, resolveSourceEntry } from '@moliver28/theme/config/pages';
+import { BLOCK_KINDS } from '@moliver28/theme/blocks/registry';
+import PrintStyles from '@moliver28/theme/layouts/PrintStyles.astro';
+// Composed one-page home (sitefactory P14 B2): the pack declares
+// `features.home: composed` and site.config.yaml carries a `home:` page
+// spec — the SAME schema as a `pages:` entry, validated by config/pages.js.
+// `source:` entries fetch the collection here (content lives in exactly
+// one YAML entry); `id:` entries anchor their section — the nav links
+// below resolve against them (HTML fragment navigation,
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#linking_to_an_element_on_the_same_page).
+// Packs that never declare the feature never enter this branch: their
+// emitted index bytes are UNCHANGED (the #83 conditional-emission pattern).
+type SourceEntry = { id: string; data: Record<string, unknown> };
+type HomeBlock = { block: string; props: Record<string, unknown>; id?: string; source?: { collection: string; type?: string } };
+const { home } = loadComposedPages(process.cwd(), { blockKinds: BLOCK_KINDS, withHome: true });
+if (!home) throw new Error('site.config.yaml: this pack emits the composed home, but site.config.yaml carries no `home:` page spec (see docs/TEMPLATE-CATALOG.md in the sitefactory repo)');
+const sourceCollections: Record<string, SourceEntry[]> = { "entities": (await getCollection("entities")) as unknown as SourceEntry[], "pages": (await getCollection("pages")) as unknown as SourceEntry[],  };
+const blocks = home.blocks.map((entry: HomeBlock) => {
+  if (!entry.source) return entry;
+  const fetched = sourceCollections[entry.source.collection];
+  if (!fetched) throw new Error(`site.config.yaml: home.blocks: unknown source collection "${entry.source.collection}" (this site's pack ships: ${Object.keys(sourceCollections).join(', ')})`);
+  return resolveSourceEntry(entry, fetched);
+});
+// P14 B3 practice @graph: ONE ld+json script (Psychologist, Person,
+// WebSite, FAQPage) from the SAME entities the sections render. Grounded
+// (schema.org/Psychologist, schema.org/FAQPage): Psychologist ⊂ MedicalBusiness
+// ⊂ LocalBusiness; properties on their domains: address (Place),
+// areaServed/knowsAbout (Organization), availableService (MedicalOrganization;
+// MedicalTherapy), openingHours/priceRange/paymentAccepted (LocalBusiness),
+// worksFor (Person→Organization), publisher (CreativeWork→Person),
+// FAQPage mainEntity → Question; FAQPage only when faq entities exist;
+// every `<` escapes \u003c (DiscoveryHead precedent).
+const siteUrl = new URL(import.meta.env.BASE_URL, import.meta.env.SITE).href;
+const byType = (t: string) => (sourceCollections['entities'] ?? []).filter((e) => String(e.data.type) === t);
+const prof = (sourceCollections['entities'] ?? []).find((e) => String(e.data.type) === 'profile')?.data as Record<string, unknown> | undefined;
+const nodeId = (n: string) => `${siteUrl}#${n}`; const txt = (v: unknown) => String(v ?? '');
+const practiceGraph: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Psychologist', '@id': nodeId('psychologist'), url: siteUrl,
+      name: txt(prof?.name), telephone: txt(prof?.phone), email: txt(prof?.email),
+      address: { '@type': 'PostalAddress', addressLocality: txt(prof?.city), addressRegion: txt(prof?.region), postalCode: txt(prof?.postal_code) },
+      areaServed: txt(prof?.city),
+      openingHours: ((prof?.hours as Record<string, unknown>[] | undefined) ?? []).map((h) => `${txt(h.day)} ${txt(h.open)}-${txt(h.close)}`).join('; '),
+      priceRange: txt(prof?.fee), paymentAccepted: byType('insurance_plan').map((v) => txt(v.data.name)).join(', '),
+      availableService: byType('service').map((v) => ({ '@type': 'MedicalTherapy', name: txt(v.data.name) })),
+      knowsAbout: ((byType('concerns')[0]?.data.items as unknown[] | undefined) ?? []).map(txt),
+      sameAs: [txt(prof?.psychology_today_url)].filter(Boolean),
+    },
+    { '@type': 'Person', '@id': nodeId('person'), name: txt(prof?.name), jobTitle: txt(prof?.role), worksFor: { '@id': nodeId('psychologist') } },
+    { '@type': 'WebSite', '@id': nodeId('website'), name: 'Kara Hokes, PhD', url: siteUrl, publisher: { '@id': nodeId('person') } },
+    ...(byType('faq').length
+      ? [{ '@type': 'FAQPage', '@id': nodeId('faq'), mainEntity: byType('faq').map((f) => ({ '@type': 'Question', name: txt(f.data.question), acceptedAnswer: { '@type': 'Answer', text: txt(f.data.answer) } })) }]
+      : []),
+  ],
+};
+// Link-armed sections only (a collection-armed section belongs to the generic home branch).
+const navSections = [{ title: "About", link: "/#about" },{ title: "Who I Work With", link: "/#communities" },{ title: "Treatments", link: "/#services" },{ title: "Concerns", link: "/#concerns" },{ title: "Process", link: "/#approach" },{ title: "Reading", link: "/#reading" },{ title: "Insurance", link: "/#insurance" },{ title: "FAQ", link: "/#faq" },{ title: "Contact", link: "/#contact" },];
+---
+
+<BaseLayout title={home.title} description={home.description} siteName="Kara Hokes, PhD">
+  <Fragment slot="head-extra">
+    <DiscoveryHead type="website" title={home.title} description={home.description} path="" />
+    <PrintStyles />
+    <script type="application/ld+json" set:html={JSON.stringify(practiceGraph).replace(/</g, '\\u003c')} />
+  </Fragment>
+  <h1>{home.title}</h1>
+  <nav aria-label="Page sections">
+    <ul>
+      {navSections.map((section) => (
+        <li><a href={`${import.meta.env.BASE_URL}${section.link.replace(/^\//, '')}`}>{section.title}</a></li>
+      ))}
+    </ul>
+  </nav>
+  <BlockList entries={blocks} skip={['name', 'type']} />
+</BaseLayout>

@@ -1,0 +1,34 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import ContentPage from '@moliver28/theme/layouts/ContentPage.astro';
+import DiscoveryHead from '../../components/DiscoveryHead.astro';
+
+export async function getStaticPaths() {
+  const entities = await getCollection('entities');
+  return entities.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}
+
+interface Props {
+  entry: CollectionEntry<'entities'>;
+}
+const { entry } = Astro.props;
+const data = entry.data as Record<string, unknown>;
+---
+
+<ContentPage
+  siteName="Kara Hokes, PhD"
+  title={String(data.name ?? entry.id)}
+  description={typeof data.summary === 'string' ? data.summary : undefined}
+  kicker={String(data.type ?? 'entity')}
+  block={data}
+  skip={['name', 'type']}
+>
+  <Fragment slot="head-extra">
+    <DiscoveryHead
+      type="website"
+      title={String(data.name ?? entry.id)}
+      description={typeof data.summary === 'string' ? data.summary : undefined}
+      path={`entities/${entry.id}/`}
+    />
+  </Fragment>
+</ContentPage>

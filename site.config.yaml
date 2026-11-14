@@ -1,0 +1,71 @@
+# Machine-readable site identity. The factory's ops tooling reads this file;
+# humans read AGENTS.md. Keep both in sync.
+site: site-scratch-practice
+owner: moliver28
+description: Online trauma therapy with Kara Hokes, PhD, a clinical psychologist licensed in Washington State and PSYPACT certified. CPT, DBT, ACT, PE, and CBT by secure video for veterans, survivors of sexual and domestic violence, and under-represented communities. Free 15-minute consultation; most major insurance accepted; $150 self-pay.
+author: Kara Hokes, PhD
+vertical: practice
+# Look & feel: @moliver28/theme tokens preset (tokens/presets/<id>/).
+# Swap + rebuild re-skins the site (no component changes).
+theme_preset: clinical-calm
+
+template:
+  name: journalism
+  version: 0.1.0
+
+theme:
+  name: "@moliver28/theme"
+  version: 0.9.0
+  distribution: vendored
+  path: vendor/theme
+
+graph:
+  height: 32rem
+
+# Config-composed pages (P6.7, OPTIONAL): declare a page as an ordered list
+# of theme blocks — no markdown file, no template edit. Commented out by
+# default (an absent field changes nothing); uncomment and adapt to add:
+# pages:
+#   about:
+#     title: About this investigation
+#     description: Who we are and how to reach the newsroom
+#     blocks:
+#       - block: fields        # a block-registry id; unknown ids fail the build
+#         props:               # rendered as a definition list
+#           mission: Independent tracking of the Riverside clearance.
+#           contact: tips@example.org
+# Runbook (shape, slug rules, config-vs-markdown precedence):
+# docs/TEMPLATE-CATALOG.md in the sitefactory repo.
+
+# Reader discovery (P9 UX F3): defaults are ALL ON — XML sitemap
+# (sitemap-index.xml), RSS feed (/rss.xml), Open Graph + Twitter cards,
+# JSON-LD. Set a key to false to opt that feature out at the next build;
+# unknown keys fail the build loudly. The weekly link monitor
+# (.github/workflows/monitor.yml) reads the deployed sitemap — opting out
+# of sitemap degrades it to checking the homepage only.
+discovery:
+  sitemap: true
+  rss: true
+  opengraph: true
+  jsonld: true
+
+# CI quality budgets: Lighthouse category minimums (enforced by
+# scripts/lighthouserc.cjs in the site's CI quality job). Raise with care —
+# a category below its budget fails CI. Performance is 0.70, not 0.90: the
+# graph page's sigma.js force layout costs ~1.7s of main-thread blocking
+# under Lighthouse's mobile CPU throttling, which caps its performance
+# score at ~0.72-0.77 (measured on template default content). Raise it if
+# the island gets lazier, lower it per-site for heavier graphs.
+performance:
+  lighthouse:
+    categories:
+      performance: 0.70
+      accessibility: 0.95
+      best-practices: 0.90
+      seo: 0.90
+
+deploy:
+  target: github-pages
+  base: /site-scratch-practice/
+
+analytics: none
